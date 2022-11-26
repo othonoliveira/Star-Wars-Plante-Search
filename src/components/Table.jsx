@@ -1,10 +1,16 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
+import { planetFilter } from '../services/planetFilter';
 import '../styles/Table.css';
 
 function Table() {
   const values = useContext(AuthContext);
   const [search, setSearch] = useState('');
+  const [newFilter, setNewFilter] = useState({
+    column: 'population', operator: 'maior que', value: 0 });
+  const [disabled, setDisabled] = useState(true);
+  const [filters, setFilters] = useState([]);
+  const [planets, setPlanets] = useState([]);
   const head = ['Nome',
     'Rotation Period',
     'Orbital Period',
@@ -18,40 +24,83 @@ function Table() {
     'Created',
     'Edited',
     'URL'];
-  const handleChange = ({ target }) => {
+
+  useEffect(() => {
+    setPlanets([...values]);
+    if (newFilter.column !== '' && newFilter.operator !== '' && newFilter.value !== '') {
+      setDisabled(false);
+    } else {
+      setDisabled(true);
+    }
+  }, [newFilter.column, newFilter.operator, newFilter.value, values]);
+
+  const handleNameChange = ({ target }) => {
     setSearch(target.value);
   };
+
+  const handleFilterChange = ({ target }) => {
+    const { name, value } = target;
+    setNewFilter({ ...newFilter, [name]: value });
+  };
+
+  const handleClick = async () => {
+    setFilters([...filters, newFilter]);
+    setPlanets(planetFilter(newFilter, planets));
+  };
+
+  const columns = ['population', 'orbital_period', 'diameter', 'rotation_period',
+    'surface_water'];
 
   return (
     <>
       <input
         data-testid="name-filter"
         value={ search }
-        onChange={ handleChange }
+        onChange={ handleNameChange }
         type="text"
         name="search"
       />
       <div className="filter">
         <select
           data-testid="column-filter"
-          defaultValue="Select an option..."
+          defaultValue="population"
           name="column"
+          onChange={ handleFilterChange }
         >
-          <option disabled>Select an option...</option>
-          <option value="population">Population</option>
-          <option value="orbital_period">Orbital Period</option>
-          <option value="diameter">Diameter</option>
-          <option value="rotation_period">Rotation Period</option>
-          <option value="surface_water">Surface Water</option>
+          {
+            columns.map((element, index) => (
+              <option value={ element } key={ index }>{element}</option>
+            ))
+          }
         </select>
-        <select data-testid="comparison-filter" name="operator">
+        <select
+          onChange={ handleFilterChange }
+          data-testid="comparison-filter"
+          name="operator"
+          defaultValue="maior que"
+        >
+          {/* <option disabled>Select an operator...</option> */}
           <option value="maior que">maior que</option>
           <option value="menor que">menor que</option>
           <option value="igual a">igual a</option>
         </select>
-        <input type="number" name="filter-value" data-testid="value-filter" />
-        <button data-testid="button-filter" type="button">Filtrar</button>
+        <input
+          onChange={ handleFilterChange }
+          value={ newFilter.value }
+          type="number"
+          name="value"
+          data-testid="value-filter"
+        />
+        <button
+          onClick={ handleClick }
+          data-testid="button-filter"
+          type="button"
+          disabled={ disabled }
+        >
+          Filtrar
+        </button>
       </div>
+      <p>{JSON.stringify(filters)}</p>
       <table>
         <thead>
           <tr>
@@ -61,7 +110,7 @@ function Table() {
           </tr>
         </thead>
         <tbody>
-          {values.filter((planet) => planet.name.toLowerCase().includes(search))
+          {planets.filter((planet) => planet.name.toLowerCase().includes(search))
             .map((planet) => (
               <tr key={ planet.name }>
                 <th>{planet.name}</th>
