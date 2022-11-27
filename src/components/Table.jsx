@@ -27,12 +27,15 @@ function Table() {
 
   useEffect(() => {
     setPlanets([...values]);
+  }, [values]);
+
+  useEffect(() => {
     if (newFilter.column !== '' && newFilter.operator !== '' && newFilter.value !== '') {
       setDisabled(false);
     } else {
       setDisabled(true);
     }
-  }, [newFilter.column, newFilter.operator, newFilter.value, values]);
+  }, [newFilter.column, newFilter.operator, newFilter.value]);
 
   const handleNameChange = ({ target }) => {
     setSearch(target.value);
@@ -69,7 +72,12 @@ function Table() {
         >
           {
             columns.map((element, index) => (
-              <option value={ element } key={ index }>{element}</option>
+              <option
+                value={ element }
+                key={ index }
+              >
+                {element}
+              </option>
             ))
           }
         </select>
@@ -100,7 +108,6 @@ function Table() {
           Filtrar
         </button>
       </div>
-      <p>{JSON.stringify(filters)}</p>
       <table>
         <thead>
           <tr>
