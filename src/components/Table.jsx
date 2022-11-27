@@ -3,11 +3,15 @@ import AuthContext from '../context/AuthContext';
 import { planetFilter } from '../services/planetFilter';
 import '../styles/Table.css';
 
+const columns = ['population', 'orbital_period', 'diameter', 'rotation_period',
+  'surface_water'];
+
 function Table() {
   const values = useContext(AuthContext);
   const [search, setSearch] = useState('');
   const [newFilter, setNewFilter] = useState({
     column: 'population', operator: 'maior que', value: 0 });
+  const [atributeOptions, setAtributeOptions] = useState([...columns]);
   const [disabled, setDisabled] = useState(true);
   const [filters, setFilters] = useState([]);
   const [planets, setPlanets] = useState([]);
@@ -48,11 +52,10 @@ function Table() {
 
   const handleClick = async () => {
     setFilters([...filters, newFilter]);
+    setAtributeOptions(atributeOptions
+      .filter((atribute) => atribute !== newFilter.column));
     setPlanets(planetFilter(newFilter, planets));
   };
-
-  const columns = ['population', 'orbital_period', 'diameter', 'rotation_period',
-    'surface_water'];
 
   return (
     <>
@@ -71,7 +74,7 @@ function Table() {
           onChange={ handleFilterChange }
         >
           {
-            columns.map((element, index) => (
+            atributeOptions.map((element, index) => (
               <option
                 value={ element }
                 key={ index }
