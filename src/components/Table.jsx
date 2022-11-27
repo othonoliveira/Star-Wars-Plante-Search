@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
-import { planetFilter } from '../services/planetFilter';
+import planetFilter from '../services/planetFilter';
 import '../styles/Table.css';
 
 const columns = ['population', 'orbital_period', 'diameter', 'rotation_period',
