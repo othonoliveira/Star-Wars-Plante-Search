@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
+import filterRemover from '../services/filterRemover';
 import planetFilter from '../services/planetFilter';
 import '../styles/Table.css';
 
@@ -9,10 +10,10 @@ const columns = ['population', 'orbital_period', 'diameter', 'rotation_period',
 function Table() {
   const values = useContext(AuthContext);
   const [search, setSearch] = useState('');
+  const [atributeOptions, setAtributeOptions] = useState([...columns]);
   const [newFilter, setNewFilter] = useState({
     column: 'population', operator: 'maior que', value: 0 });
-  const [atributeOptions, setAtributeOptions] = useState([...columns]);
-  const [disabled, setDisabled] = useState(true);
+  // const [disabled, setDisabled] = useState(false);
   const [filters, setFilters] = useState([]);
   const [planets, setPlanets] = useState([]);
   const head = ['Nome',
@@ -34,12 +35,28 @@ function Table() {
   }, [values]);
 
   useEffect(() => {
-    if (newFilter.column !== '' && newFilter.operator !== '' && newFilter.value !== '') {
-      setDisabled(false);
-    } else {
-      setDisabled(true);
-    }
-  }, [newFilter.column, newFilter.operator, newFilter.value]);
+    filters.forEach((element) => {
+      console.log(element);
+      setPlanets((p) => planetFilter(element, p));
+    });
+  }, [filters]);
+
+  useEffect(() => {
+    // if (newFilter.column !== '' && newFilter.operator !== '' && newFilter.value !== '') {
+    //   setDisabled(false);
+    // } else {
+    //   setDisabled(true);
+    // }
+    setNewFilter({ column: atributeOptions[0], operator: 'maior que', value: 0 });
+  }, [atributeOptions]);
+
+  // const resetPlanets = async () => {
+  //   setPlanets([...values]);
+  //   filters.forEach(async (element) => {
+  //     console.log(element);
+  //     setPlanets(planetFilter(element, planets));
+  //   });
+  // };
 
   const handleNameChange = ({ target }) => {
     setSearch(target.value);
@@ -50,11 +67,23 @@ function Table() {
     setNewFilter({ ...newFilter, [name]: value });
   };
 
-  const handleClick = async () => {
+  const handleClick = () => {
     setFilters([...filters, newFilter]);
     setAtributeOptions(atributeOptions
       .filter((atribute) => atribute !== newFilter.column));
     setPlanets(planetFilter(newFilter, planets));
+  };
+
+  const removeFilter = (column) => {
+    setPlanets([...values]);
+    filterRemover(column, filters, setFilters);
+    setAtributeOptions([...atributeOptions, column]);
+  };
+
+  const removeAllFilters = () => {
+    setFilters([]);
+    setAtributeOptions([...columns]);
+    setPlanets([...values]);
   };
 
   return (
@@ -69,15 +98,14 @@ function Table() {
       <div className="filter">
         <select
           data-testid="column-filter"
-          defaultValue="population"
           name="column"
           onChange={ handleFilterChange }
         >
           {
-            atributeOptions.map((element, index) => (
+            atributeOptions.map((element) => (
               <option
                 value={ element }
-                key={ index }
+                key={ element }
               >
                 {element}
               </option>
@@ -106,9 +134,26 @@ function Table() {
           onClick={ handleClick }
           data-testid="button-filter"
           type="button"
-          disabled={ disabled }
+          // disabled={ disabled }
         >
           Filtrar
+        </button>
+      </div>
+      <div>
+        {filters.map((filter) => (
+          <div data-testid="filter" key={ filter.column }>
+            <p>{filter.column}</p>
+            <p>{filter.operator}</p>
+            <p>{filter.value}</p>
+            <button onClick={ () => removeFilter(filter.column) } type="button">X</button>
+          </div>
+        ))}
+        <button
+          data-testid="button-remove-filters"
+          onClick={ removeAllFilters }
+          type="button"
+        >
+          Remove All
         </button>
       </div>
       <table>
