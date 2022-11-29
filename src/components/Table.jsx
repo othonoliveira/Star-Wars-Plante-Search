@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import AuthContext from '../context/AuthContext';
+import changeOrder from '../services/changeOrder';
 import filterRemover from '../services/filterRemover';
 import planetFilter from '../services/planetFilter';
 import '../styles/Table.css';
@@ -16,6 +17,7 @@ function Table() {
   // const [disabled, setDisabled] = useState(false);
   const [filters, setFilters] = useState([]);
   const [planets, setPlanets] = useState([]);
+  const [order, setOrder] = useState({ column: 'population', sort: 'ASC' });
   const head = ['Nome',
     'Rotation Period',
     'Orbital Period',
@@ -42,21 +44,8 @@ function Table() {
   }, [filters]);
 
   useEffect(() => {
-    // if (newFilter.column !== '' && newFilter.operator !== '' && newFilter.value !== '') {
-    //   setDisabled(false);
-    // } else {
-    //   setDisabled(true);
-    // }
     setNewFilter({ column: atributeOptions[0], operator: 'maior que', value: 0 });
   }, [atributeOptions]);
-
-  // const resetPlanets = async () => {
-  //   setPlanets([...values]);
-  //   filters.forEach(async (element) => {
-  //     console.log(element);
-  //     setPlanets(planetFilter(element, planets));
-  //   });
-  // };
 
   const handleNameChange = ({ target }) => {
     setSearch(target.value);
@@ -84,6 +73,15 @@ function Table() {
     setFilters([]);
     setAtributeOptions([...columns]);
     setPlanets([...values]);
+  };
+
+  const handleSortChange = ({ target }) => {
+    const { name, value } = target;
+    setOrder({ ...order, [name]: value });
+  };
+
+  const handleSort = () => {
+    changeOrder(order, planets, setPlanets);
   };
 
   return (
@@ -140,6 +138,54 @@ function Table() {
         </button>
       </div>
       <div>
+        <select
+          data-testid="column-sort"
+          name="column"
+          onChange={ handleSortChange }
+        >
+          {
+            atributeOptions.map((atribute) => (
+              <option
+                value={ atribute }
+                key={ atribute }
+              >
+                {atribute}
+              </option>
+            ))
+          }
+        </select>
+        <label htmlFor="ascendente">
+          <input
+            data-testid="column-sort-input-asc"
+            type="radio"
+            name="sort"
+            id="ascendente"
+            value="ASC"
+            onChange={ handleSortChange }
+            checked
+          />
+          Ascendente
+        </label>
+        <label htmlFor="descendente">
+          <input
+            data-testid="column-sort-input-desc"
+            type="radio"
+            name="sort"
+            id="descendente"
+            value="DESC"
+            onChange={ handleSortChange }
+          />
+          Descendente
+        </label>
+        <button
+          data-testid="column-sort-button"
+          onClick={ handleSort }
+          type="button"
+        >
+          Ordenar
+        </button>
+      </div>
+      <div>
         {filters.map((filter) => (
           <div data-testid="filter" key={ filter.column }>
             <p>{filter.column}</p>
@@ -168,7 +214,7 @@ function Table() {
           {planets.filter((planet) => planet.name.toLowerCase().includes(search))
             .map((planet) => (
               <tr key={ planet.name }>
-                <th>{planet.name}</th>
+                <th data-testid="planet-name">{planet.name}</th>
                 <th>{planet.rotation_period}</th>
                 <th>{planet.orbital_period}</th>
                 <th>{planet.diameter}</th>
