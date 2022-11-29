@@ -11,14 +11,6 @@ function AuthProvider({ children }) {
       await setValue([...newValue]);
     };
     fetchPlanets();
-    // fetchStarWars().then((r) => setData(r.results.reduce((a, b) => {
-    //   const objFiltrado = Object.keys(b).reduce((acc, curr) => {
-    //     if (curr === 'residents') return acc;
-    //     acc[curr] = b[curr];
-    //     return acc;
-    //   }, {});
-    //   return [...a, objFiltrado];
-    // }, [])));
   }, []);
 
   return (
