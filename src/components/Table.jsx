@@ -191,7 +191,14 @@ function Table() {
             <p>{filter.column}</p>
             <p>{filter.operator}</p>
             <p>{filter.value}</p>
-            <button onClick={ () => removeFilter(filter.column) } type="button">X</button>
+            <button
+              data-testid="remove-single-filter"
+              onClick={ () => removeFilter(filter.column) }
+              type="button"
+            >
+              X
+
+            </button>
           </div>
         ))}
         <button
